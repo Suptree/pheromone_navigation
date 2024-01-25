@@ -24,6 +24,10 @@ class PPOAgent:
         # ディレクトリを作成
         os.makedirs(self.dir_name, exist_ok=True)
 
+        # モデルを保存するディレクトリを作成
+        self.model_path = f"{self.dir_name}/models"
+        os.makedirs(self.model_path, exist_ok=True)
+
         # hyperparameters
         self.n_iteration = n_iteration # イテレーション数
         self.actor_lr = actor_lr # アクターの学習率
@@ -311,7 +315,7 @@ class PPOAgent:
     def scheduler(self, step):
         return max(1.0 - float(step / self.n_iteration), 0)
     def save_weights(self, iteration):
-        filepath = os.path.join(self.dir_name, f'{iteration}_weights.pth')
+        filepath = os.path.join(self.model_path, f'{iteration}_weights.pth')
 
         torch.save({"current_policy_state_dict": self.actor.state_dict(),
                     "critic_state_dict": self.critic.state_dict(),

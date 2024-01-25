@@ -686,7 +686,7 @@ class GazeboEnvironment:
 
     def laser_callback(self, data, robot_id):
         angles = [math.pi/4, 0, -math.pi/4, math.pi/2, -math.pi/2, 3*math.pi/4, math.pi, -3*math.pi/4]
-        angle_range = 5 * (math.pi / 180)  # ±5度をラジアンに変換
+        angle_range = 15 * (math.pi / 180)  # ±5度をラジアンに変換
 
         min_distances = []
         for base_angle in angles:
@@ -695,7 +695,7 @@ class GazeboEnvironment:
             distances = self.get_sector_distances(data, sector_start, sector_end)
             if distances:  # データが存在する場合のみ最小値を計算
                 min_distance = min(distances)
-                min_distance = 0.3 - min_distance  # 距離が近いほど大きな値になるようにする
+                min_distance = 0.31 - min_distance  # 距離が近いほど大きな値になるようにする
             else:
                 min_distance = 0.0  # すべてのデータが無限大の場合は0.3メートルとする
             min_distances.append(min_distance)
