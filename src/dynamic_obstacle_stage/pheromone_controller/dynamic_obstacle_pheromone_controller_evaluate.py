@@ -132,10 +132,10 @@ def main():
             # 結果をリストに追加
             results.append([run, total_steps[i], task_time[i], total_reward[i], done_category[i]])
     # CSVファイルに結果を書き出す
-    dir_name = f"./ppo_Evaluate-Cooperative-IR-Navigation/{agent.start_time}"
+    dir_name = f"./ppo_Evaluate-" + env.env_name + f"/{agent.start_time}"
     # ディレクトリを作成
     os.makedirs(dir_name, exist_ok=True)
-    filename = f'{dir_name}/cooperative_ir_navigation+_results.csv'
+    filename = f'{dir_name}/results.csv'
     with open(filename, mode='w', newline='') as file:
         writer = csv.writer(file)
         # ヘッダーを書き込む

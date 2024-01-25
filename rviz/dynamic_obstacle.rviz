@@ -113,7 +113,7 @@ Visualization Manager:
         base_link:
           Alpha: 1
           Show Axes: true
-          Show Trail: true
+          Show Trail: false
           Value: true
         hat_link:
           Alpha: 1

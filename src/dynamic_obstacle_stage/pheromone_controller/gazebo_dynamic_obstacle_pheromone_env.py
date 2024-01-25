@@ -298,8 +298,8 @@ class GazeboEnvironment:
             self.state[i] = list(next_state_pheromone_value) + [next_state_distance_to_goal, math.sin(next_state_angle_to_goal), math.cos(next_state_angle_to_goal), next_state_robot_linear_velocity_x, next_state_robot_angular_velocity_z]
             self.state[i] = self.normalize_state(self.state[i])
 
-        if self.id == 0:
-            print(f"\033[1;36m[{self.robot_name[0]}]\033[0m : \033[38;5;214m{self.state[0]}\033[0m")
+        # if self.id == 0:
+        #     print(f"\033[1;36m[{self.robot_name[0]}]\033[0m : \033[38;5;214m{self.state[0]}\033[0m")
         return self.state, reward, self.done, baseline_reward, info
 
 
