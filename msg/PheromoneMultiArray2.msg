@@ -1,0 +1,2 @@
+std_msgs/Float32MultiArray pheromone1
+std_msgs/Float32MultiArray pheromone2

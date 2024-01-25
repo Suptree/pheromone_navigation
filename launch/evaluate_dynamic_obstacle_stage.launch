@@ -1,0 +1,40 @@
+<launch>
+	<param name="/robot_description" textfile="$(find hero_description)/robot/hero_light.urdf"/>
+	
+
+	<!-- 1つ目の環境 -->
+	<node name="spawn_urdf_arena_0" pkg="gazebo_ros" type="spawn_model" args="-urdf -model arena_0 -x 0.0 -y -0.0 -z -0.0 -file $(find phers_framework)/models/arena_1/arena.urdf" />
+	
+	<!-- 障害物 -->
+	<!-- ロボット -->
+	<group ns ="hero_0">
+    	<param name="tf_prefix" value="hero_0" />
+    	<param name="robot_description_hero_0" command="$(find xacro)/xacro '$(find hero_description)/robot/hero_light.urdf'"/>
+		<node name="spawn_urdf_hero_0" pkg="gazebo_ros" type="spawn_model" args="-urdf -model hero_0 -x 0.0 -y 0.0 -z 0.2395 -robot_namespace hero_0 -file $(find hero_description)/robot/hero_laser.urdf" />
+		<node pkg="tf" type="static_transform_publisher" name="hero_0_broadcaster" args="0 0 0 0 0 0 world /hero_0/odom 20" />
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+	</group>
+
+	<group ns ="hero_1">
+    	<param name="tf_prefix" value="hero_1" />
+    	<param name="robot_description_hero_1" command="$(find xacro)/xacro '$(find hero_description)/robot/hero_light.urdf'"/>
+		<node name="spawn_urdf_hero_1" pkg="gazebo_ros" type="spawn_model" args="-urdf -model hero_1 -x 1.0 -y 0.0 -z 0.2395 -robot_namespace hero_1 -file $(find hero_description)/robot/hero_laser.urdf" />
+		<node pkg="tf" type="static_transform_publisher" name="hero_1_broadcaster" args="0 0 0 0 0 0 world /hero_1/odom 20" />
+		<node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+	</group>
+
+
+
+	<!-- 5つ目の環境 -->
+	<!-- <node name="spawn_urdf_arena_4" pkg="gazebo_ros" type="spawn_model" args="-urdf -model arena_4 -x 0.0 -y 20.0 -z -0.0 -file $(find phers_framework)/models/arena_1/arena.urdf" /> -->
+
+	<!-- 6つ目の環境 -->
+	<!-- <node name="spawn_urdf_arena_5" pkg="gazebo_ros" type="spawn_model" args="-urdf -model arena_5 -x 20.0 -y 20.0 -z -0.0 -file $(find phers_framework)/models/arena_1/arena.urdf" /> -->
+
+	<!-- 7つ目の環境 -->
+	<!-- <node name="spawn_urdf_arena_6" pkg="gazebo_ros" type="spawn_model" args="-urdf -model arena_6 -x 40.0 -y 20.0 -z -0.0 -file $(find phers_framework)/models/arena_1/arena.urdf" /> -->
+
+	<!-- 8つ目の環境 -->
+	<!-- <node name="spawn_urdf_arena_7" pkg="gazebo_ros" type="spawn_model" args="-urdf -model arena_7 -x 60.0 -y 20.0 -z -0.0 -file $(find phers_framework)/models/arena_1/arena.urdf" /> -->
+
+</launch>
