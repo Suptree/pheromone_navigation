@@ -39,7 +39,7 @@ class GazeboEnvironment:
         self.id = id
         
         # 固定パラメータ
-        self.n_states = 14
+        self.n_states = 22
         self.robot_num = 2
         self.robot_radius = 0.04408
         self.max_linear_velocity = 0.2
@@ -75,7 +75,7 @@ class GazeboEnvironment:
         ## フェロモンを使用しないので固定値
         self.pheromone_value = [None] * self.robot_num
         ## IRセンサから取得
-        self.laser_value = [[0] * 8] * self.robot_num
+        self.laser_value = [None] * self.robot_num
 
         # ゴールの位置
         self.goal_pos_x = [None] * self.robot_num
@@ -230,6 +230,15 @@ class GazeboEnvironment:
                 if self.robot_color[i] != "GREEN":
                     self.robot_color[i] = "GREEN"
                     color = ColorRGBA()
+                    color.r = 0
+                    color.g = 255
+                    color.b = 0
+                    color.a = 255
+                    self.pub_led[i].publish(color)
+            elif sum(next_state_laser_value) > 0:
+                if self.robot_color[i] != "RED":
+                    self.robot_color[i] = "RED"
+                    color = ColorRGBA()
                     color.r = 255
                     color.g = 0
                     color.b = 0
@@ -295,11 +304,12 @@ class GazeboEnvironment:
 
             # 状態の更新
             self.prev_distance_to_goal[i] = next_state_distance_to_goal
-            self.state[i] = list(next_state_pheromone_value) + [next_state_distance_to_goal, math.sin(next_state_angle_to_goal), math.cos(next_state_angle_to_goal), next_state_robot_linear_velocity_x, next_state_robot_angular_velocity_z]
+            self.state[i] = list(next_state_pheromone_value) + list(next_state_laser_value) + [next_state_distance_to_goal, math.sin(next_state_angle_to_goal), math.cos(next_state_angle_to_goal), next_state_robot_linear_velocity_x, next_state_robot_angular_velocity_z]
             self.state[i] = self.normalize_state(self.state[i])
 
         # if self.id == 0:
-        #     print(f"\033[1;36m[{self.robot_name[0]}]\033[0m : \033[38;5;214m{self.state[0]}\033[0m")
+        #     # 水色と白
+        #     print(f"\033[1;36m[{self.robot_name[0]}]\033[0m : \033[38;5;45m{self.state[0]}\033[0m")
         return self.state, reward, self.done, baseline_reward, info
 
 
@@ -364,10 +374,14 @@ class GazeboEnvironment:
         """
         normalized_state = []
         normalize_index = 0
+        # フェロモン値の正規化は行わない
+        for i in range(9):
+            normalized_state.append(state[normalize_index])
+            normalize_index += 1
 
         # IRセンサー値の正規化
-        for i in range(9):  # 先頭の8つの値はIRセンサー値
-            normalized_state.append(state[i])
+        for i in range(8):  # 先頭の8つの値はIRセンサー値
+            normalized_state.append(state[normalize_index] / 0.3)
             normalize_index += 1
 
         env_max_distance_to_goal = 2.0 * math.sqrt(2.0)  # 環境の最大ゴールまでの距離
@@ -446,7 +460,7 @@ class GazeboEnvironment:
         # print("delete all markers")
 
         # 静的障害物を削除
-        # self.delete_static_obstacle()
+        self.delete_static_obstacle()
         # print("delete all static obstacles")
 
         # ロボットの位置を初期位置へリセット
@@ -471,13 +485,15 @@ class GazeboEnvironment:
             rospy.sleep(0.1)
             res = self.reset_pheromone_map()
 
-        print("res", res)
-        # 静的障害物の位置をランダムに設定
-        # self.set_distance_range_random_static_obstacle()
+        print("reset pheromone map : ", res)
+        # 静的障害物の位置を設定
+        ## 静的障害物の位置を固定
+        # self.set_static_obstacles()
+        self.set_distance_range_random_static_obstacle()
         # print("reset all static obstacles position")
 
         # 静的障害物を追加
-        # self.add_static_obstacle()
+        self.add_static_obstacle()
         # print("add all static obstacles")
 
         # 静的障害物が再配置されるまで待機
@@ -492,7 +508,7 @@ class GazeboEnvironment:
         self.set_goal_marker()
         # print("set all goal markers")
         # 静的障害物のマーカーを追加
-        # self.set_obstacle_marker()
+        self.set_obstacle_marker()
         # print("set all static obstacles markers")
 
         # フラグのリセット
@@ -528,8 +544,7 @@ class GazeboEnvironment:
             elif angle_to_goal > math.pi:
                 angle_to_goal -= 2 * math.pi
             self.angle_to_goal[i] = angle_to_goal
-
-            self.state[i] = list(self.pheromone_value[i]) + [self.distance_to_goal[i], math.sin(self.angle_to_goal[i]), math.cos(self.angle_to_goal[i]), self.robot_linear_velocity[i].x, self.robot_angular_velocity[i].z]
+            self.state[i] = list(self.pheromone_value[i]) + list(self.laser_value[i]) +  [self.distance_to_goal[i], math.sin(self.angle_to_goal[i]), math.cos(self.angle_to_goal[i]), self.robot_linear_velocity[i].x, self.robot_angular_velocity[i].z]
             self.state[i] = self.normalize_state(self.state[i])
         return self.state
     
@@ -773,7 +788,7 @@ class GazeboEnvironment:
 
     def laser_callback(self, data, robot_id):
         angles = [math.pi/4, 0, -math.pi/4, math.pi/2, -math.pi/2, 3*math.pi/4, math.pi, -3*math.pi/4]
-        angle_range = 5 * (math.pi / 180)  # ±5度をラジアンに変換
+        angle_range = 15 * (math.pi / 180)  # ±5度をラジアンに変換
 
         min_distances = []
         for base_angle in angles:
@@ -808,7 +823,7 @@ class GazeboEnvironment:
     
     def delete_static_obstacle(self):
         """ 静的障害物を削除 """
-        for i in range(4):
+        for i in range(len(self.obstacle)):
             # 障害物の名前
             obstacle_name = f"obs_{self.id}{i+1}"
             # 障害物の削除

@@ -449,7 +449,9 @@ class GazeboEnvironment:
         # フェロモンマップをリセット
 
         # 静的障害物の位置をランダムに設定
-        self.set_distance_range_random_static_obstacle()
+        # self.set_distance_range_random_static_obstacle()
+        # self.set_static_obstacles()
+        self.set_random_distance_static_obstacles()
         # print("reset all static obstacles position")
 
         # 静的障害物を追加
@@ -538,7 +540,7 @@ class GazeboEnvironment:
             state_msg.model_name = self.robot_name[i]
             state_msg.pose.position.x = self.origin_x
             state_msg.pose.position.y = self.origin_y
-            state_msg.pose.position.z = 0.2395
+            state_msg.pose.position.z = 0.04
 
             # ランダムな角度をラジアンで生成
             yaw = random.uniform(0, 2 * math.pi)
@@ -721,7 +723,7 @@ class GazeboEnvironment:
     
     def delete_static_obstacle(self):
         """ 静的障害物を削除 """
-        for i in range(4):
+        for i in range(len(self.obstacle)):
             # 障害物の名前
             obstacle_name = f"obs_{self.id}{i+1}"
             # 障害物の削除
@@ -809,7 +811,19 @@ class GazeboEnvironment:
             (self.origin_x + 0.4,    self.origin_y + 0.0),
             (self.origin_x + (-0.4), self.origin_y + 0.0)
         ]
+    def set_random_distance_static_obstacles(self):
+        # 静的障害物の位置のリストを初期化
+        self.obstacle = []
 
+        # 8方向の角度（ラジアン）
+        angles = [0, math.pi/4, math.pi/2, 3*math.pi/4, math.pi, 5*math.pi/4, 3*math.pi/2, 7*math.pi/4]
+
+        # 各方向に対して障害物を設定
+        for angle in angles:
+            distance = random.uniform(0.4, 0.75)
+            x = self.origin_x + distance * math.cos(angle)
+            y = self.origin_y + distance * math.sin(angle)
+            self.obstacle.append((x, y))
     def add_static_obstacle(self):
         """ 静的障害物を追加 """
         for i, obs in enumerate(self.obstacle):

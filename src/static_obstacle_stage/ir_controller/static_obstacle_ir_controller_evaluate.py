@@ -34,7 +34,7 @@ def main():
 
     device = torch.device("cpu")
 
-    total_run = 2 # 実験の試行回数
+    total_run = 20 # 実験の試行回数
     plot_interval = 10  # 10イテレーションごとにグラフを保存
     num_env = 1
     seed_value = 1023

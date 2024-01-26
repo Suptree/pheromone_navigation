@@ -56,10 +56,10 @@ def main():
     agent.save_setting_config()
     # 途中から始める場合、以下のコメントアウトを外す
     # load_path = \
-    # "/home/nishilab/catkin_ws/src/phers_framework/src/cooperative_navigation_stage_parallel/ppo_Parallel-Cooperative-IR-Navigation/2024-01-23_17-59-55"
-    # load_iteration = 640
-    # agent.load_weights(load_path + "/" + f"{load_iteration}" + "_weights.pth")
-    # agent.logger.load_and_merge_csv_data(load_path+"/training_history")
+    # "/home/nishilab/catkin_ws/src/pheromone_navigation/src/cooperative_navigation_stage/test/pheromone_ir_controller/ppo_Gazebo_Cooperative_Navigation_Pheromoone_IR/2024-01-26_03-47-02"
+    # load_iteration = 170
+    # agent.load_weights(load_path + "/models/" + f"{load_iteration}" + "_weights.pth")
+    # agent.logger.load_and_merge_csv_data(load_path+"/training_csv")
     signal.signal(signal.SIGINT, exit)
 
                 
