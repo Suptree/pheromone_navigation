@@ -584,7 +584,7 @@ class GazeboEnvironment:
             state_msg.model_name = self.robot_name[i]
             state_msg.pose.position.x = initial_position[i].x
             state_msg.pose.position.y = initial_position[i].y
-            state_msg.pose.position.z = 0.2395
+            state_msg.pose.position.z = 0.04
 
             # ランダムな角度をラジアンで生成
             yaw = random.uniform(0, 2 * math.pi)
@@ -617,7 +617,7 @@ class GazeboEnvironment:
             state_msg.model_name = self.robot_name[i]
             state_msg.pose.position.x = self.origin_x
             state_msg.pose.position.y = self.origin_y
-            state_msg.pose.position.z = 0.2395
+            state_msg.pose.position.z = 0.04
 
             # ランダムな角度をラジアンで生成
             yaw = random.uniform(0, 2 * math.pi)
