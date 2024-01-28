@@ -84,7 +84,7 @@ class GazeboEnvironment:
         self.max_distance_to_goal = [None] * self.robot_num
 
         # 静的障害物の位置
-        self.obstacle_num = 4
+        self.obstacle_num = 8
         self.obstacle = [
             # (self.origin_x + 0.0,    self.origin_y + 0.4),
             # (self.origin_x + 0.0,    self.origin_y + (-0.4)),
@@ -435,6 +435,7 @@ class GazeboEnvironment:
             if distance_to_obstacle <= (0.04408 + 0.02):
                 return True
 
+            
         return False
     
     # 環境のリセット
@@ -489,7 +490,8 @@ class GazeboEnvironment:
         # 静的障害物の位置を設定
         ## 静的障害物の位置を固定
         # self.set_static_obstacles()
-        self.set_distance_range_random_static_obstacle()
+        # self.set_distance_range_random_static_obstacle()
+        self.set_random_distance_static_obstacles()
         # print("reset all static obstacles position")
 
         # 静的障害物を追加
@@ -823,7 +825,9 @@ class GazeboEnvironment:
     
     def delete_static_obstacle(self):
         """ 静的障害物を削除 """
-        for i in range(len(self.obstacle)):
+        # print("delete static obstacles")
+        # print("self.obstacle : ", self.obstacle)
+        for i in range(self.obstacle_num):
             # 障害物の名前
             obstacle_name = f"obs_{self.id}{i+1}"
             # 障害物の削除
@@ -832,6 +836,20 @@ class GazeboEnvironment:
             except rospy.ServiceException as e:
                 self.notify_slack(f"[def delete_static_obstacle]: {e}")
                 print("[def delete_static_obstacle]: {0}".format(e))
+
+    def set_random_distance_static_obstacles(self):
+        # 静的障害物の位置のリストを初期化
+        self.obstacle = []
+
+        # 8方向の角度（ラジアン）
+        angles = [0, math.pi/4, math.pi/2, 3*math.pi/4, math.pi, 5*math.pi/4, 3*math.pi/2, 7*math.pi/4]
+
+        # 各方向に対して障害物を設定
+        for angle in angles:
+            distance = random.uniform(0.1, 0.75)
+            x = self.origin_x + distance * math.cos(angle)
+            y = self.origin_y + distance * math.sin(angle)
+            self.obstacle.append((x, y))
     def set_distance_random_static_obstacle(self):
         """ 静的障害物の位置をランダムに設定 """
         # 静的障害物の位置をランダムに設定

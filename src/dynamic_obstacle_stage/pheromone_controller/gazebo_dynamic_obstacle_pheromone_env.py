@@ -808,7 +808,7 @@ class GazeboEnvironment:
     
     def delete_static_obstacle(self):
         """ 静的障害物を削除 """
-        for i in range(len(self.obstacle)):
+        for i in range(self.obstacle_num):
             # 障害物の名前
             obstacle_name = f"obs_{self.id}{i+1}"
             # 障害物の削除
