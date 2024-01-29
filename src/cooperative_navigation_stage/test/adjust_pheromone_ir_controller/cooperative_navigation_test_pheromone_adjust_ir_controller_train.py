@@ -10,7 +10,7 @@ import torch.multiprocessing as mp
 from torch.multiprocessing import Manager
 import signal
 import sys
-import gazebo_cooperative_navigation_test_pheromone_ir_env as gazebo_env
+import gazebo_cooperative_navigation_test_pheromone_adjust_ir_env as gazebo_env
 
 
 # GPUが使える場合はGPUを使う
@@ -55,11 +55,11 @@ def main():
 
     agent.save_setting_config()
     # 途中から始める場合、以下のコメントアウトを外す
-    # load_path = \
-    # "/home/nishilab/catkin_ws/src/pheromone_navigation/src/cooperative_navigation_stage/test/pheromone_ir_controller/ppo_Gazebo_Cooperative_Navigation_Pheromoone_IR/2024-01-28_06-21-52"
-    # load_iteration = 1100
-    # agent.load_weights(load_path + "/models/" + f"{load_iteration}" + "_weights.pth")
-    # agent.logger.load_and_merge_csv_data(load_path+"/training_csv")
+    load_path = \
+    "/home/nishilab/catkin_ws/src/pheromone_navigation/src/cooperative_navigation_stage/test/adjust_pheromone_ir_controller/ppo_Gazebo_Cooperative_Navigation_Pheromoone_Adjust_IR/2024-01-28_23-53-49"
+    load_iteration = 380
+    agent.load_weights(load_path + "/models/" + f"{load_iteration}" + "_weights.pth")
+    agent.logger.load_and_merge_csv_data(load_path+"/training_csv")
     signal.signal(signal.SIGINT, exit)
 
                 

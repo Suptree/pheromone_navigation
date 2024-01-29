@@ -92,8 +92,8 @@ class PheromoneFramework:
             f"/env_{self.id}/visualization_marker_array", MarkerArray, queue_size=1
         )
         # マーカーパブリッシュ用のタイマーを設定（1秒間隔）
-        self.marker_publish_interval = rospy.Duration(1.0)  # 1秒
-        self.marker_publish_timer = rospy.Timer(self.marker_publish_interval, self.marker_publish_callback)
+        # self.marker_publish_interval = rospy.Duration(1.0)  # 1秒
+        # self.marker_publish_timer = rospy.Timer(self.marker_publish_interval, self.marker_publish_callback)
     
     
     def marker_publish_callback(self, event):
