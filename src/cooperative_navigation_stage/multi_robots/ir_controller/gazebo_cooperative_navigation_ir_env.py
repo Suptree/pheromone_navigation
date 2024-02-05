@@ -25,22 +25,21 @@ from pheromone_navigation.msg import PheromoneInjection
 from pheromone_navigation.msg import PheromoneMultiArray2
 from pheromone_navigation.srv import ResetPheromone
 
+robot_num = 2
 
-
-env_name = "Gazebo_Cooperative_Navigation_4Robots_Pheromoone_IR"
-n_states = 22
-robot_num = 4
+env_name = f"{robot_num}-Robots_IR"
+n_states = 13
 n_actions = 2
 
 class GazeboEnvironment:
-    n_states = 22
+    n_states = 13
     
     def __init__(self, id):
         self.id = id
         
         # 固定パラメータ
-        self.n_states = 22
-        self.robot_num = 4
+        self.n_states = 13
+        self.robot_num = robot_num
         self.robot_radius = 0.04408
         self.max_linear_velocity = 0.2
         self.max_angular_velocity = 1.0
@@ -73,7 +72,7 @@ class GazeboEnvironment:
         self.robot_angular_velocity = [None] * self.robot_num
         self.robot_angle = [None] * self.robot_num
         ## フェロモンを使用しないので固定値
-        self.pheromone_value = [None] * self.robot_num
+        self.pheromone_value = [[0] * 9] * self.robot_num
         ## IRセンサから取得
         self.laser_value = [None] * self.robot_num
 
@@ -139,8 +138,8 @@ class GazeboEnvironment:
             self.robot_odometry_sub[i] = rospy.Subscriber(f'/{self.robot_name[i]}/odom', Odometry, lambda data, robot_id=i: self.odometry_callback(data, robot_id))
 
         # pheromoneの値を取得するためのサブスクライバの設定
-        self.sub_phero = rospy.Subscriber(
-            f'/env_{self.id}/pheromone_value', PheromoneMultiArray2, self.pheromone_callback)
+        # self.sub_phero = rospy.Subscriber(
+        #     f'/env_{self.id}/pheromone_value', PheromoneMultiArray2, self.pheromone_callback)
         
         # ロボットのIRセンサの値を取得するためのサブスクライバの設定
         self.laser_sub = [None] * self.robot_num
@@ -151,8 +150,8 @@ class GazeboEnvironment:
         # self.reset_pheromone_pub = rospy.Publisher(f'/env_{self.id}/pheromone_reset_signal', EmptyMsg, queue_size=1)
 
         # pheromoneの値をリセットするためのサービスの設定
-        rospy.wait_for_service(f'/env_{self.id}/reset_pheromone_service')
-        self.reset_pheromone_srv = rospy.ServiceProxy(f'/env_{self.id}/reset_pheromone_service', ResetPheromone)
+        # rospy.wait_for_service(f'/env_{self.id}/reset_pheromone_service')
+        # self.reset_pheromone_srv = rospy.ServiceProxy(f'/env_{self.id}/reset_pheromone_service', ResetPheromone)
         
         # pheromoneの値をリセットするためのパブリッシャの設定
         self.injection_pheromone_pub = rospy.Publisher(f'/env_{self.id}/pheromone_injection', PheromoneInjection, queue_size=1)
@@ -196,10 +195,10 @@ class GazeboEnvironment:
             twist.angular = Vector3(x=0, y=0, z=w)
             self.cmd_vel_pub[i].publish(twist)
 
-            pheromone_injection = PheromoneInjection()
-            pheromone_injection.robot_id = self.robot_id[i]
-            pheromone_injection.radius = 0.3
-            self.injection_pheromone_pub.publish(pheromone_injection)
+            # pheromone_injection = PheromoneInjection()
+            # pheromone_injection.robot_id = self.robot_id[i]
+            # pheromone_injection.radius = 0.3
+            # self.injection_pheromone_pub.publish(pheromone_injection)
 
         rospy.sleep(0.1)
 
@@ -304,7 +303,7 @@ class GazeboEnvironment:
 
             # 状態の更新
             self.prev_distance_to_goal[i] = next_state_distance_to_goal
-            self.state[i] = list(next_state_pheromone_value) + list(next_state_laser_value) + [next_state_distance_to_goal, math.sin(next_state_angle_to_goal), math.cos(next_state_angle_to_goal), next_state_robot_linear_velocity_x, next_state_robot_angular_velocity_z]
+            self.state[i] = list(next_state_laser_value) + [next_state_distance_to_goal, math.sin(next_state_angle_to_goal), math.cos(next_state_angle_to_goal), next_state_robot_linear_velocity_x, next_state_robot_angular_velocity_z]
             self.state[i] = self.normalize_state(self.state[i])
 
         # if self.id == 0:
@@ -375,9 +374,9 @@ class GazeboEnvironment:
         normalized_state = []
         normalize_index = 0
         # フェロモン値の正規化は行わない
-        for i in range(9):
-            normalized_state.append(state[normalize_index])
-            normalize_index += 1
+        # for i in range(9):
+        #     normalized_state.append(state[normalize_index])
+        #     normalize_index += 1
 
         # IRセンサー値の正規化
         for i in range(8):  # 先頭の8つの値はIRセンサー値
@@ -475,24 +474,24 @@ class GazeboEnvironment:
         rospy.sleep(3.0)
 
         # ゴールの初期位置を設定
+        # self.set_goals_each_robot()
         self.set_goals_random()
-
-        
         # print("reset all goals position")
 
         # フェロモンマップをリセット
         # self.reset_pheromone_pub.publish(EmptyMsg())
-        res = False
-        while not res:
-            rospy.sleep(0.1)
-            res = self.reset_pheromone_map()
+        # res = False
+        # while not res:
+        #     rospy.sleep(0.1)
+        #     res = self.reset_pheromone_map()
 
-        print("reset pheromone map : ", res)
+        # print("reset pheromone map : ", res)
         # 静的障害物の位置を設定
         ## 静的障害物の位置を固定
         # self.set_static_obstacles()
-        # self.set_distance_range_random_static_obstacle()
         self.set_range_static_obstacle(num_obstacles=12)
+        # self.set_distance_range_random_static_obstacle()
+        # self.set_random_distance_static_obstacles()
         # print("reset all static obstacles position")
 
         # 静的障害物を追加
@@ -547,32 +546,11 @@ class GazeboEnvironment:
             elif angle_to_goal > math.pi:
                 angle_to_goal -= 2 * math.pi
             self.angle_to_goal[i] = angle_to_goal
-            self.state[i] = list(self.pheromone_value[i]) + list(self.laser_value[i]) +  [self.distance_to_goal[i], math.sin(self.angle_to_goal[i]), math.cos(self.angle_to_goal[i]), self.robot_linear_velocity[i].x, self.robot_angular_velocity[i].z]
+            self.state[i] = list(self.laser_value[i]) +  [self.distance_to_goal[i], math.sin(self.angle_to_goal[i]), math.cos(self.angle_to_goal[i]), self.robot_linear_velocity[i].x, self.robot_angular_velocity[i].z]
             self.state[i] = self.normalize_state(self.state[i])
         return self.state
     
-    def set_random_goal(self):
-        # ゴールの位置をランダムに設定
-        for i in range(self.robot_num):
-            goal_r = 0.8
-            goal_radius = 2.0 * math.pi * random.random()
 
-            self.goal_pos_x[i] = self.origin_x + goal_r * math.cos(goal_radius)
-            self.goal_pos_y[i] = self.origin_y + goal_r * math.sin(goal_radius)
-
-
-    # 完了
-    def set_goals(self):
-        for i in range(self.robot_num):
-            # ゴールを他のロボットの位置に設定
-            other_robot_index = (i + 1) % self.robot_num  # 他のロボットのインデックスを取得
-            self.goal_pos_x[i] = self.robot_position[other_robot_index].x
-            self.goal_pos_y[i] = self.robot_position[other_robot_index].y
-
-            # ロボットとゴールの距離の最大値を設定
-            self.max_distance_to_goal[i] = math.sqrt((self.robot_position[i].x - self.goal_pos_x[i])**2
-                                    + (self.robot_position[i].y - self.goal_pos_y[i])**2)
-            
     def set_goals_random(self):
         for i in range(self.robot_num):
             while True:
@@ -596,7 +574,6 @@ class GazeboEnvironment:
                     # self.max_distance_to_goal[i] = math.sqrt((self.robot_position[i].x - goal_x) ** 2
                     #                                          + (self.robot_position[i].y - goal_y) ** 2)
                     break    
-
     # 完了
     def set_initialize_robots(self):
         initial_position = [None] * self.robot_num
@@ -862,6 +839,8 @@ class GazeboEnvironment:
             except rospy.ServiceException as e:
                 self.notify_slack(f"[def delete_static_obstacle]: {e}")
                 print("[def delete_static_obstacle]: {0}".format(e))
+
+
     def set_range_static_obstacle(self, num_obstacles):
         """静的障害物の位置をランダムに設定"""
         # 静的障害物の位置のリストを初期化
@@ -908,98 +887,6 @@ class GazeboEnvironment:
                 self.obstacle.append((obstacle_x, obstacle_y))
                 break
 
-    def set_random_distance_static_obstacles(self):
-        # 静的障害物の位置のリストを初期化
-        self.obstacle = []
-
-        # 8方向の角度（ラジアン）
-        angles = [0, math.pi/4, math.pi/2, 3*math.pi/4, math.pi, 5*math.pi/4, 3*math.pi/2, 7*math.pi/4]
-
-        # 各方向に対して障害物を設定
-        for angle in angles:
-            distance = random.uniform(0.1, 0.75)
-            x = self.origin_x + distance * math.cos(angle)
-            y = self.origin_y + distance * math.sin(angle)
-            self.obstacle.append((x, y))
-    def set_distance_random_static_obstacle(self):
-        """ 静的障害物の位置をランダムに設定 """
-        # 静的障害物の位置をランダムに設定
-        self.obstacle = []
-        for i in range(4):
-            while True:
-                # 原点からの距離をランダムに設定
-                distance = random.uniform(0.4, 0.8)
-                # angle = random.uniform(0, 2 * math.pi)  # 角度をランダムに設定
-                angle = i * math.pi / 2.0  # 角度をランダムに設定
-
-                obstacle_x = self.origin_x + distance * math.cos(angle)
-                obstacle_y = self.origin_y + distance * math.sin(angle)
-
-                # ゴールとの距離を計算
-                distance_to_goal = math.sqrt((obstacle_x - self.goal_pos_x) ** 2 + (obstacle_y - self.goal_pos_y) ** 2)
-
-                # ゴールとの距離が0.1以上ならば配置
-                if distance_to_goal >= 0.1:
-                    self.obstacle.append((obstacle_x, obstacle_y))
-                    break
-
-    def set_distance_range_random_static_obstacle(self):
-        """ 静的障害物の位置をランダムに設定 """
-        # 静的障害物の位置をランダムに設定
-        self.obstacle = []
-        angle_offset = math.radians(10)  # ±10度の範囲
-
-        for i in range(self.obstacle_num):
-            while True:
-                # 原点からの距離をランダムに設定
-                distance = random.uniform(0.4, 1.1)
-                # angle = random.uniform(0, 2 * math.pi)  # 角度をランダムに設定
-                base_angle = i * math.pi / 2.0  # 角度をランダムに設定
-                
-                # 基本の角度からランダムなオフセットを加える
-                obstacle_angle = base_angle + random.uniform(-angle_offset, angle_offset)
-
-                obstacle_x = self.origin_x + distance * math.cos(obstacle_angle)
-                obstacle_y = self.origin_y + distance * math.sin(obstacle_angle)
-
-                # ロボットとの距離を計算
-                too_close_to_goal = False
-                too_close_to_robot = False
-                for j in range(self.robot_num):
-                    distance_to_robot = math.sqrt((obstacle_x - self.robot_position[j].x) ** 2 + (obstacle_y - self.robot_position[j].y) ** 2)
-                    if distance_to_robot < 0.1:
-                        too_close_to_robot = True
-                        break
-                    distance_to_goal = math.sqrt((obstacle_x - self.goal_pos_x[j]) ** 2 + (obstacle_y - self.goal_pos_y[j]) ** 2)
-                    if distance_to_goal < 0.35:
-                        too_close_to_goal = True
-                        break
-                if too_close_to_robot:
-                    continue
-                if too_close_to_goal:
-                    continue
-
-                # 他の障害物との距離を計算
-                too_close_to_other_obstacle = False
-                for existing_obstacle in self.obstacle:
-                    distance_to_obstacle = math.sqrt((obstacle_x - existing_obstacle[0]) ** 2 + (obstacle_y - existing_obstacle[1]) ** 2)
-                    if distance_to_obstacle < 0.1:
-                        too_close_to_other_obstacle = True
-                        break
-                if too_close_to_other_obstacle:
-                    continue
-
-                # 条件を満たした場合は障害物を追加
-                self.obstacle.append((obstacle_x, obstacle_y))
-                break
-    def set_static_obstacles(self):
-        # 静的障害物の位置
-        self.obstacle = [
-            (self.origin_x + 0.0,    self.origin_y + 0.4),
-            (self.origin_x + 0.0,    self.origin_y + (-0.4)),
-            (self.origin_x + 0.4,    self.origin_y + 0.0),
-            (self.origin_x + (-0.4), self.origin_y + 0.0)
-        ]
 
     def add_static_obstacle(self):
         """ 静的障害物を追加 """

@@ -10,7 +10,7 @@ import torch.multiprocessing as mp
 from torch.multiprocessing import Manager
 import signal
 import sys
-import gazebo_cooperative_navigation_test_pheromone_ir_env as gazebo_env
+import gazebo_cooperative_navigation_ir_env as gazebo_env
 import csv  # CSVモジュールをインポート
 # GPUが使える場合はGPUを使う
 from datetime import datetime
