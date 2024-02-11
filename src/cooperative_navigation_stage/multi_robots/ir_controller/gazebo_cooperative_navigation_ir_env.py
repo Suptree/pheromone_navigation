@@ -32,7 +32,7 @@ n_states = 21
 n_actions = 2
 
 class GazeboEnvironment:
-    n_states = 13
+    n_states = 21
     
     def __init__(self, id):
         self.id = id
@@ -467,7 +467,8 @@ class GazeboEnvironment:
         # print("delete all static obstacles")
 
         # ロボットの位置を初期位置へリセット
-        self.set_initialize_robots()
+        self.set_initialize_multi_robots()
+        
         # print("reset all robots position")
 
         # ロボットの色をリセット
@@ -623,6 +624,62 @@ class GazeboEnvironment:
                 self.set_model_state(state_msg)
             except rospy.ServiceException as e:
                 print("[def respawn_robots]: {0}".format(e))
+
+    def set_initialize_multi_robots(self):
+        initial_position = [None] * self.robot_num
+        robot_r = 0.8  # 半径 0.8 の円
+        min_distance = 0.4  # 最小距離 (フェロモン半径)
+
+        for i in range(self.robot_num):
+            while True:
+                angle = 2.0 * math.pi * random.random()
+                x = robot_r * math.cos(angle) + self.origin_x
+                y = robot_r * math.sin(angle) + self.origin_y
+
+                # 他のロボットとの距離を確認
+                is_valid_position = True
+                for j in range(i):
+                    if initial_position[j] is not None:
+                        distance = math.sqrt((x - initial_position[j].x) ** 2 + (y - initial_position[j].y) ** 2)
+                        if distance < min_distance:
+                            is_valid_position = False
+                            break
+
+                if is_valid_position:
+                    initial_position[i] = Vector3(x=x, y=y, z=0)
+                    break
+
+            state_msg = ModelState()
+            state_msg.model_name = self.robot_name[i]
+            state_msg.pose.position.x = initial_position[i].x
+            state_msg.pose.position.y = initial_position[i].y
+            state_msg.pose.position.z = 0.04
+
+            # ランダムな角度をラジアンで生成
+            yaw = random.uniform(0, 2 * math.pi)
+
+            # 四元数への変換
+            qx = 0.0
+            qy = 0.0
+            qz = math.sin(yaw / 2)
+            qw = math.cos(yaw / 2)
+
+            state_msg.pose.orientation.x = 0.0
+            state_msg.pose.orientation.y = 0.0
+            state_msg.pose.orientation.z = qz
+            state_msg.pose.orientation.w = qw
+            state_msg.twist.linear.x = 0.0
+            state_msg.twist.linear.y = 0.0
+            state_msg.twist.linear.z = 0.0
+            state_msg.twist.angular.x = 0.0
+            state_msg.twist.angular.y = 0.0
+            state_msg.twist.angular.z = 0.0
+
+            try:
+                self.set_model_state(state_msg)
+            except rospy.ServiceException as e:
+                print("[def respawn_robots]: {0}".format(e))
+
     def set_initialize_robot(self):
 
         for i in range(self.robot_num):
