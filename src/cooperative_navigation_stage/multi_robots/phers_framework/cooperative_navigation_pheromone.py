@@ -22,7 +22,7 @@ class PheromoneFramework:
     def __init__(self, id):
         self.id = id
 
-        self.robot_num = 2
+        self.robot_num = 5
         self.robot_radius = 0.04408
 
         # 原点座標
@@ -552,6 +552,9 @@ class Pheromone:
                     distance = np.sqrt(distance_squared)
                     value = max_value * (1 - distance / radius)
                     self.grid[new_x_index + i, new_y_index + j] = self.grid[new_x_index + i, new_y_index + j] + value
+                    # 最大値を1に設定
+                    if self.grid[new_x_index + i, new_y_index + j] > 1.0:
+                        self.grid[new_x_index + i, new_y_index + j] = 1.0
     def update(self, min_pheromone_value, max_pheromone_value):
         # current_time = rospy.get_time()
         update_interval = 0.1

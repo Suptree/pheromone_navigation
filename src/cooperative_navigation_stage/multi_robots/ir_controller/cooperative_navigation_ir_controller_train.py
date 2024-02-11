@@ -29,7 +29,7 @@ def main():
     total_iterations = 5000
     plot_interval = 10  # 10イテレーションごとにグラフを保存
     save_model_interval = 10  # 100イテレーションごとにモデルを保存
-    num_env = 4
+    num_env = 2
     seed_value = 1023
         
     set_seeds(seed_value)

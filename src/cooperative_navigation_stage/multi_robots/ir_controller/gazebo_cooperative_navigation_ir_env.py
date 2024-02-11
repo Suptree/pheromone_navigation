@@ -25,10 +25,10 @@ from pheromone_navigation.msg import PheromoneInjection
 from pheromone_navigation.msg import PheromoneMultiArray2
 from pheromone_navigation.srv import ResetPheromone
 
-robot_num = 2
+robot_num = 5
 
 env_name = f"{robot_num}-Robots_IR"
-n_states = 13
+n_states = 21
 n_actions = 2
 
 class GazeboEnvironment:
@@ -38,7 +38,7 @@ class GazeboEnvironment:
         self.id = id
         
         # 固定パラメータ
-        self.n_states = 13
+        self.n_states = 21
         self.robot_num = robot_num
         self.robot_radius = 0.04408
         self.max_linear_velocity = 0.2
@@ -201,6 +201,9 @@ class GazeboEnvironment:
             # self.injection_pheromone_pub.publish(pheromone_injection)
 
         rospy.sleep(0.1)
+        # すべてのロボットを停止
+        for i in range(self.robot_num):
+            self.stop_robot(i)
 
         self.state = [None] * self.robot_num
         reward = [None] * self.robot_num
@@ -379,7 +382,7 @@ class GazeboEnvironment:
         #     normalize_index += 1
 
         # IRセンサー値の正規化
-        for i in range(8):  # 先頭の8つの値はIRセンサー値
+        for i in range(16):  # 先頭の8つの値はIRセンサー値
             normalized_state.append(state[normalize_index] / 0.3)
             normalize_index += 1
 
@@ -460,7 +463,7 @@ class GazeboEnvironment:
         # print("delete all markers")
 
         # 静的障害物を削除
-        self.delete_static_obstacle()
+        # self.delete_static_obstacle()
         # print("delete all static obstacles")
 
         # ロボットの位置を初期位置へリセット
@@ -478,24 +481,14 @@ class GazeboEnvironment:
         self.set_goals_random()
         # print("reset all goals position")
 
-        # フェロモンマップをリセット
-        # self.reset_pheromone_pub.publish(EmptyMsg())
-        # res = False
-        # while not res:
-        #     rospy.sleep(0.1)
-        #     res = self.reset_pheromone_map()
 
-        # print("reset pheromone map : ", res)
         # 静的障害物の位置を設定
         ## 静的障害物の位置を固定
-        # self.set_static_obstacles()
-        self.set_range_static_obstacle(num_obstacles=12)
-        # self.set_distance_range_random_static_obstacle()
-        # self.set_random_distance_static_obstacles()
+        # self.set_range_static_obstacle(num_obstacles=12)
         # print("reset all static obstacles position")
 
         # 静的障害物を追加
-        self.add_static_obstacle()
+        # self.add_static_obstacle()
         # print("add all static obstacles")
 
         # 静的障害物が再配置されるまで待機
@@ -510,7 +503,7 @@ class GazeboEnvironment:
         self.set_goal_marker()
         # print("set all goal markers")
         # 静的障害物のマーカーを追加
-        self.set_obstacle_marker()
+        # self.set_obstacle_marker()
         # print("set all static obstacles markers")
 
         # フラグのリセット
@@ -790,26 +783,38 @@ class GazeboEnvironment:
             print("[def reset_pheromone_map]: {0}".format(e))
             self.notify_slack(f"[def reset_pheromone_map]: {e}")
             return False
-
     def laser_callback(self, data, robot_id):
-        angles = [math.pi/4, 0, -math.pi/4, math.pi/2, -math.pi/2, 3*math.pi/4, math.pi, -3*math.pi/4]
-        angle_range = 15 * (math.pi / 180)  # ±5度をラジアンに変換
-
-        min_distances = []
-        for base_angle in angles:
-            sector_start = base_angle - angle_range
-            sector_end = base_angle + angle_range
-            distances = self.get_sector_distances(data, sector_start, sector_end)
-            if distances:  # データが存在する場合のみ最小値を計算
-                min_distance = min(distances)
-                min_distance = 0.3 - min_distance  # 距離が近いほど大きな値になるようにする
+        distances = []  # 空のリストを初期化
+        for distance in data.ranges:
+            if distance != float('inf'):  # 無限大でない場合
+                modified_distance = 0.3 - distance  # 距離が近いほど大きな値になるように調整
+                modified_distance = abs(modified_distance)  # 絶対値を取る
             else:
-                min_distance = 0.0  # すべてのデータが無限大の場合は0.3メートルとする
-            min_distances.append(min_distance)
+                modified_distance = 0.0  # 無限大の場合は0とする
+            
+            distances.append(modified_distance)  # 変換した距離をリストに追加
+        
+        self.laser_value[robot_id] = distances  # 変換した距離のリストをrobot_idに対応するlaser_valueに格納
 
-        self.laser_value[robot_id] = min_distances
-        # robot_nameとそれに対応したlaser_valueを表示
-        # print(f"{self.robot_name[robot_id]} : {self.laser_value[robot_id]}")
+    # def laser_callback(self, data, robot_id):
+    #     angles = [math.pi/4, 0, -math.pi/4, math.pi/2, -math.pi/2, 3*math.pi/4, math.pi, -3*math.pi/4]
+    #     angle_range = 15 * (math.pi / 180)  # ±5度をラジアンに変換
+
+    #     min_distances = []
+    #     for base_angle in angles:
+    #         sector_start = base_angle - angle_range
+    #         sector_end = base_angle + angle_range
+    #         distances = self.get_sector_distances(data, sector_start, sector_end)
+    #         if distances:  # データが存在する場合のみ最小値を計算
+    #             min_distance = min(distances)
+    #             min_distance = 0.3 - min_distance  # 距離が近いほど大きな値になるようにする
+    #         else:
+    #             min_distance = 0.0  # すべてのデータが無限大の場合は0.3メートルとする
+    #         min_distances.append(min_distance)
+
+    #     self.laser_value[robot_id] = min_distances
+    #     # robot_nameとそれに対応したlaser_valueを表示
+    #     # print(f"{self.robot_name[robot_id]} : {self.laser_value[robot_id]}")
 
     def odometry_callback(self, data, robot_id):
         self.robot_linear_velocity[robot_id] = data.twist.twist.linear
