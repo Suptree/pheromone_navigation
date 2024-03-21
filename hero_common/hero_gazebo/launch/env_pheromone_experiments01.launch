@@ -1,0 +1,29 @@
+<launch>
+	<param name="/robot_description" textfile="$(find hero_description)/robot/hero_light.urdf"/>
+		
+	<node name="spawn_urdf_arena_1" pkg="gazebo_ros" type="spawn_model" args="-urdf -model arena_1 -x 0.0 -y -0.0 -z -0.0 -file $(find hero_gazebo)/worlds/models/arena_1/arena.urdf" />
+
+	<node name="spawn_urdf_hero_0" pkg="gazebo_ros" type="spawn_model" args="-urdf -model hero_0 -x -0.0001 -y -0.0 -z 0.2395 -robot_namespace hero_0 -file $(find hero_description)/robot/hero_light.urdf" />
+    <node name="spawn_urdf_obs_01" pkg="gazebo_ros" type="spawn_model" args="-sdf -model obs_01 -x 0.4000 -y -0.0 -z 0.4  -file /home/nishilab/model_editor_models/obstacle_0/model.sdf" />
+    <node name="spawn_urdf_obs_02" pkg="gazebo_ros" type="spawn_model" args="-sdf -model obs_02 -x -0.4000 -y -0.0 -z 0.4  -file /home/nishilab/model_editor_models/obstacle_1/model.sdf" />
+    <node name="spawn_urdf_obs_03" pkg="gazebo_ros" type="spawn_model" args="-sdf -model obs_03 -x 0.0000 -y 0.40000 -z 0.4  -file /home/nishilab/model_editor_models/obstacle_0/model.sdf" />
+    <node name="spawn_urdf_obs_04" pkg="gazebo_ros" type="spawn_model" args="-sdf -model obs_04 -x 0.0000 -y -0.4000 -z 0.4  -file /home/nishilab/model_editor_models/obstacle_3/model.sdf" />
+	<!-- <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher_hero_0">
+		<param name="publish_frequency" type="double" value="30.0" />
+		<param name="tf_prefix" value="hero_0" />
+		<param name="use_tf_static" value="False" />
+	</node>
+	<node pkg="tf" type="static_transform_publisher" name="hero_0_broadcaster" args="0 0 0 0 0 0 world /hero_0/odom 20" /> -->
+
+   <group ns="hero_0">
+        <!-- <param name="tf_prefix" value="hero_0" /> -->
+        <param name="robot_description_0" command="$(find xacro)/xacro '$(find hero_description)/robot/hero.urdf'"/>
+        <node name="hero_0" pkg="gazebo_ros" type="spawn_model" output="log"
+              args="-urdf -model hero_0 -x 0.0 -y 0.0 -z 0.05 -param robot_description_0">
+        </node>
+        <node pkg="tf" type="static_transform_publisher" name="hero_0_broadcaster" args="0 0 0 0 0 0 world /hero_0/odom 20" />
+        <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
+        <node name="joint_state_publisher" pkg="joint_state_publisher" type="joint_state_publisher"/>
+    </group>
+	 <node name="rviz" pkg="rviz" type="rviz"/> 
+</launch>
