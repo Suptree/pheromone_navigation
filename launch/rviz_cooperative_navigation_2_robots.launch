@@ -3,5 +3,5 @@
     <env name="LIBGL_ALWAYS_SOFTWARE" value="1" />
 
     <!-- Launch RViz with a specific configuration file -->
-    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find pheromone_navigation)/rviz/cooperative_navigation_2_robots.rviz" required="true" />
+    <node pkg="rviz" type="rviz" name="rviz" args="-d $(find pheromone_navigation)/rviz/cooperative_navigation_5_robots.rviz" required="true" />
 </launch>

@@ -4,7 +4,7 @@ import tf
 import math
 from std_msgs.msg import ColorRGBA
 from std_msgs.msg import Float32MultiArray
-from std_msgs.msg import Empty as EmptyMsg
+from std_srvs.srv import Empty
 from geometry_msgs.msg import Pose
 
 import rospy
@@ -132,6 +132,13 @@ class GazeboEnvironment:
         self.gazebo_model_state_sub = rospy.Subscriber(
             '/gazebo/model_states', ModelStates, self.gazebo_model_state_callback)
         
+        # シミュレータ再開
+        rospy.wait_for_service('/gazebo/unpause_physics')
+        self.unpause_physics = rospy.ServiceProxy('/gazebo/unpause_physics', Empty)
+
+        # シミュレータ一時停止
+        rospy.wait_for_service('/gazebo/pause_physics')
+        self.pause_physics = rospy.ServiceProxy('/gazebo/pause_physics', Empty)
         # ロボットの相対位置を取得するためのサブスクライバの設定
         self.robot_odometry_sub = [None] * self.robot_num
         for i in range(self.robot_num):
@@ -175,7 +182,8 @@ class GazeboEnvironment:
         # 時間が止まっている場合は停止
         while self.last_time == rospy.Time.now():
             rospy.sleep(0.01)
-                    
+
+        self.unpause_physics()            
         # ロボットに速度を設定
         ## 終了したロボットのアクションは停止
         for i in range(self.robot_num):
@@ -202,8 +210,7 @@ class GazeboEnvironment:
 
         rospy.sleep(0.1)
         # すべてのロボットを停止
-        for i in range(self.robot_num):
-            self.stop_robot(i)
+        self.pause_physics()
 
         self.state = [None] * self.robot_num
         reward = [None] * self.robot_num
@@ -1006,3 +1013,5 @@ class GazeboEnvironment:
         rl_ros_machine  = os.environ.get('RL_ROS_MACHINE')
 
         slack.notify(text=f"{rl_ros_machine} : {text}")
+
+    
